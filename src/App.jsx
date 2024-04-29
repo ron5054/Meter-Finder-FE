@@ -1,60 +1,94 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { meterService } from './services/meter.service'
+import MeterPrompt from './cmps/meterPrompt.jsx'
 import './App.css'
 
 function App() {
   const [num, setNum] = useState(0)
   const [isSearch, setIsSearch] = useState(false)
-  const [text , setText] = useState('')
-  const [meters, setMeters] = useState([])
+  const [showPrompt, setShowPrompt] = useState(false)
+  const [text, setText] = useState('')
+  const [latitude, setLatitude] = useState(0)
+  const [longitude, setLongitude] = useState(0)
+  const [accuracy, setaccuracy] = useState(0)
+  const [meter, setMeter] = useState({})
+  const [watchId, setWatchId] = useState(null)
+  const [message, setMessage] = useState('')
+  const dialog = useRef('dialog')
 
   useEffect(() => {
-    if (localStorage.getItem('meters')) {
-      setMeters(JSON.parse(localStorage.getItem('meters')))
+    if (!isSearch && watchId === null) {
+      const id = navigator.geolocation.watchPosition(
+        (position) => {
+          setLatitude(position.coords.latitude)
+          setLongitude(position.coords.longitude)
+          setaccuracy(Math.floor(position.coords.accuracy))
+        },
+        (error) => {
+          console.error('Error getting location:', error)
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 0,
+        }
+      )
+      setWatchId(id)
+    } else if (isSearch && watchId !== null) {
+      navigator.geolocation.clearWatch(watchId)
+      setWatchId(null)
     }
-  }, [])
-
-  const handleChange = (ev) => {
-    setNum(ev.target.value)
-  }
-
-  const handlText = (ev) => {
-    setText(ev.target.value)
-  }
+  }, [isSearch])
 
   const handleSubmit = (event) => {
     event.preventDefault()
     isSearch ? searchMeter() : saveMeter()
   }
 
-  const saveMeter = () => {
-    if (meters.find(meter => meter.num === num)) return alert('קיים מונה עם קוד זהה') 
-    getLocation().then(({longitude, latitude}) => {
-      const meter = { num, text, latitude, longitude }
-      setMeters(meters.concat(meter))
-      localStorage.setItem('meters', JSON.stringify(meters.concat(meter)))
-    })
+  const showMessage = (message, type) => {
+    setMessage(message)
+    dialog.current.className = type
+    dialog.current.showModal()
+    setTimeout(() => {
+      closeMessage()
+    }, 2500)
   }
 
-  const searchMeter = () => {
-    const meterIndex = meters.findIndex(meter => meter.num === num)
-    const {latitude, longitude, text} = meters[meterIndex]
-    if (text) {
-      if (confirm(`${text} \n האם לנווט למונה?`)) navigate(latitude, longitude)
-    } else {
-      navigate(latitude, longitude)
+  const closeMessage = () => {
+    dialog.current.close()
+    setMessage('')
+  }
+
+  const closePrompt = () => {
+    setShowPrompt(false)
+  }
+
+  const saveMeter = async () => {
+    if (num.length <= 4) return showMessage('מספר מונה אינו תקין', 'error')
+    try {
+      const success = await meterService.addMeter({
+        num,
+        text,
+        latitude,
+        longitude,
+      })
+
+      if (success) showMessage('המונה נשמר בהצלחה', 'success')
+      else showMessage('המונה כבר קיים במערכת', 'error')
+    } catch (error) {
+      console.log(error)
     }
   }
 
-  const getLocation = async () => {
-          return new Promise((resolve, reject) => {
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(resolve, reject)
-            } else {
-              reject("Geolocation is not supported by this browser.")
-            }
-          })
-            .then(position => position.coords)
-            .catch(err => console.log(err))
+  const searchMeter = async () => {
+    if (num.length <= 4) return showMessage('מספר מונה אינו תקין', 'error')
+    try {
+      const meter = await meterService.getMeter(num)
+      setMeter(meter)
+      if (meter) setShowPrompt(true)
+      else showMessage('לא נמצא מונה', 'error')
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const navigate = (latitude, longitude) => {
@@ -64,17 +98,43 @@ function App() {
 
   return (
     <>
-      <button onClick={() => setIsSearch(!isSearch)}>{isSearch ? 'הוספת מונה' : 'חיפוש מונה'}</button>
+      <div className='curr-locattion'>
+        <h1>מיקום נוכחי</h1>
+        {latitude}, {longitude}
+      </div>
+      <div>דיוק מיקום: {accuracy} מטר</div>
+      <button onClick={() => setIsSearch(!isSearch)}>
+        {isSearch ? 'הוספת מונה' : 'חיפוש מונה'}
+      </button>
       <form onSubmit={handleSubmit}>
         <h1>מספר מונה מלא</h1>
-        <input type="number" min={0} onChange={handleChange} />
-        {!isSearch &&
-        <div>
-          <h1>תאור מיקום</h1>
-          <input type="text" onChange={handlText} placeholder='הכנס תאור (לא חובה)' />
-        </div>}
-        <button type="submit">{!isSearch ? 'שמור מיקום' : 'חפש מונה'}</button>
+        <input
+          type='number'
+          min={0}
+          onChange={(ev) => setNum(ev.target.value.trim().replace(/^0+/, ''))}
+        />
+        {!isSearch && (
+          <>
+            <h1>תאור מיקום</h1>
+            <textarea
+              rows={5}
+              onChange={(ev) => setText(ev.target.value)}
+              placeholder='הכנס תאור (לא חובה)'
+            />
+          </>
+        )}
+        <button type='submit'>{!isSearch ? 'שמור מיקום' : 'חפש מונה'}</button>
       </form>
+
+      {showPrompt && isSearch && (
+        <MeterPrompt
+          meter={meter}
+          closePrompt={closePrompt}
+          navigate={navigate}
+        />
+      )}
+
+      <dialog ref={dialog}>{message}</dialog>
     </>
   )
 }
