@@ -41,6 +41,22 @@ dialog.error {
   background: rgb(243, 9, 9);
 }
 
+nav {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nav-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-row button {
+  width: 100%;
+}
+
 .meter-prompt {
   border-radius: 0.2rem;
   background-color: rgb(21, 175, 7);
@@ -48,4 +64,8 @@ dialog.error {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+button.active {
+  background-color: rgb(175, 7, 125);
 }
