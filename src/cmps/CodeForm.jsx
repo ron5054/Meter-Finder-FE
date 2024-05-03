@@ -19,7 +19,7 @@ function CodeForm({ addCode }) {
         required
       />
       <input
-        type='number'
+        type='text'
         value={code.num}
         onChange={(ev) => setCode({ ...code, num: ev.target.value })}
         placeholder='קוד כניסה'

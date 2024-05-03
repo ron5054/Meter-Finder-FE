@@ -18,6 +18,7 @@ function App() {
   const [message, setMessage] = useState('')
   const [codes, setCodes] = useState(null)
   const dialog = useRef('dialog')
+  const loader = useRef('loader')
 
   const [mode, setMode] = useState('addMeter')
 
@@ -67,7 +68,10 @@ function App() {
     setShowPrompt(false)
   }
 
+  const gpsData = () => latitude && longitude && accuracy <= 50
+
   const addCode = async (code) => {
+    if (!gpsData) return showMessage('אין קליטת gps', 'error')
     const location = { type: 'Point', coordinates: [latitude, longitude] }
     const newCode = { ...code, location }
 
@@ -81,10 +85,12 @@ function App() {
   }
 
   const searchCodes = async () => {
+    loader.current.showModal()
     setIsSearch(false)
     setMode('searchCodes')
     try {
       const codes = await meterService.getCodes(latitude, longitude)
+      loader.current.close()
       if (codes.length === 0) showMessage('לא נמצאו קודים במיקומך', 'error')
       setCodes(codes)
     } catch (error) {
@@ -93,7 +99,9 @@ function App() {
   }
 
   const saveMeter = async () => {
+    if (!gpsData) return showMessage('אין קליטת gps', 'error')
     if (num.length <= 4) return showMessage('מספר מונה אינו תקין', 'error')
+    loader.current.showModal()
     try {
       const success = await meterService.addMeter({
         num,
@@ -102,6 +110,7 @@ function App() {
         longitude,
       })
 
+      loader.current.close()
       if (success) {
         showMessage('המונה נשמר בהצלחה', 'success')
         setText('')
@@ -114,11 +123,15 @@ function App() {
 
   const searchMeter = async () => {
     if (num.length <= 4) return showMessage('מספר מונה אינו תקין', 'error')
+    loader.current.showModal()
     try {
       const meter = await meterService.getMeter(num)
-      setMeter(meter)
-      if (meter) setShowPrompt(true)
-      else showMessage('לא נמצא מונה', 'error')
+      loader.current.close()
+      if (meter) {
+        setMeter(meter)
+        setShowPrompt(true)
+        setNum(0)
+      } else showMessage('לא נמצא מונה', 'error')
     } catch (error) {
       console.log(error)
     }
@@ -204,9 +217,10 @@ function App() {
 
       {mode === 'addCode' && <CodeForm addCode={addCode} />}
 
-      {mode === 'searchCodes' && codes && <CodeList codes={codes} />}
+      {mode === 'searchCodes' && codes.length && <CodeList codes={codes} />}
 
       <dialog ref={dialog}>{message}</dialog>
+      <dialog ref={loader} className='loader'></dialog>
     </>
   )
 }
