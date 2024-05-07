@@ -3,6 +3,7 @@ export const meterService = {
   getMeter,
   addCode,
   getCodes,
+  login,
 }
 
 const BASE_URL =
@@ -10,12 +11,13 @@ const BASE_URL =
 
 async function addMeter(meter) {
   try {
-    const response = await fetch(BASE_URL + 'add', {
+    const response = await fetch(BASE_URL + 'meter/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(meter),
+      credentials: 'include',
     })
 
     const { success } = await response.json()
@@ -27,7 +29,12 @@ async function addMeter(meter) {
 
 async function getMeter(number) {
   try {
-    const response = await fetch(BASE_URL + 'meter/' + number)
+    const response = await fetch(BASE_URL + 'meter/' + number, {
+      credentials: 'include',
+    })
+
+    if (response.status === 404) return null
+
     const meter = await response.json()
     return meter
   } catch (error) {
@@ -37,11 +44,12 @@ async function getMeter(number) {
 
 async function addCode(code) {
   try {
-    const response = await fetch(BASE_URL + 'addCode', {
+    const response = await fetch(BASE_URL + 'code/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(code),
     })
 
@@ -55,11 +63,40 @@ async function addCode(code) {
 async function getCodes(latitude, longitude) {
   try {
     const response = await fetch(
-      `${BASE_URL}codes?latitude=${latitude}&longitude=${longitude}`
+      `${BASE_URL}code?latitude=${latitude}&longitude=${longitude}`,
+      {
+        credentials: 'include',
+      }
     )
+
+    if (response.status === 404) return null
+
     const { codes } = await response.json()
     return codes
   } catch (error) {
     console.log(error)
+  }
+}
+
+async function login(creds) {
+  try {
+    const response = await fetch(BASE_URL + 'auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(creds),
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      throw new Error(error)
+    }
+
+    const user = await response.json()
+    return user
+  } catch (error) {
+    console.error('Error during login:', error)
   }
 }

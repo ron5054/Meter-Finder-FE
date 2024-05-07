@@ -1,5 +1,4 @@
 function CodeList({ codes }) {
-  console.log(codes)
   return (
     <ul>
       {codes.map((code) => (
