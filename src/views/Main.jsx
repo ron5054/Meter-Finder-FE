@@ -84,7 +84,7 @@ function Main() {
   const addCode = async (code) => {
     if (code.num.length <= 2) return showMessage('הקוד אינו תקין', 'error')
     if (!gpsData) return showMessage('אין קליטת gps', 'error')
-    loader.current.showModal()
+    loaderOn()
     const location = { type: 'Point', coordinates: [latitude, longitude] }
     const newCode = { ...code, location }
 
@@ -99,7 +99,7 @@ function Main() {
   }
 
   const searchCodes = async () => {
-    loader.current.showModal()
+    loaderOn()
     setIsSearch(false)
     setMode('searchCodes')
     try {
@@ -114,8 +114,8 @@ function Main() {
 
   const saveMeter = async () => {
     if (!gpsData) return showMessage('אין קליטת gps', 'error')
-    if (num.length <= 4) return showMessage('מספר מונה אינו תקין', 'error')
-    loader.current.showModal()
+    if (num <= 4) return showMessage('מספר מונה אינו תקין', 'error')
+    loaderOn()
     try {
       const success = await meterService.addMeter({
         num,
@@ -136,8 +136,9 @@ function Main() {
   }
 
   const searchMeter = async () => {
-    if (num.length <= 4) return showMessage('מספר מונה אינו תקין', 'error')
-    loader.current.showModal()
+    console.log(num)
+    if (num <= 4) return showMessage('מספר מונה אינו תקין', 'error')
+    loaderOn()
     try {
       const meter = await meterService.getMeter(num)
       loader.current.close()
@@ -159,6 +160,22 @@ function Main() {
   const gotoMap = (latitude, longitude) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
     window.open(url, '_blank')
+  }
+
+  const updateCodesState = (codeId, updatedNum) => {
+    const newCodes = codes.map((code) => {
+      if (code._id === codeId) code.num = updatedNum
+      return code
+    })
+    setCodes(newCodes)
+  }
+
+  const loaderOn = () => {
+    loader.current.showModal()
+  }
+
+  const loaderOff = () => {
+    loader.current.close()
   }
 
   return (
@@ -231,7 +248,14 @@ function Main() {
 
       {mode === 'addCode' && <CodeForm addCode={addCode} />}
 
-      {mode === 'searchCodes' && codes.length > 0 && <CodeList codes={codes} />}
+      {mode === 'searchCodes' && codes.length > 0 && (
+        <CodeList
+          codes={codes}
+          updateCodesState={updateCodesState}
+          loaderOff={loaderOff}
+          loaderOn={loaderOn}
+        />
+      )}
 
       <dialog ref={dialog}>{message}</dialog>
       <dialog ref={loader} className='loader'></dialog>

@@ -2,6 +2,7 @@ export const meterService = {
   addMeter,
   getMeter,
   addCode,
+  updateCode,
   getCodes,
   login,
 }
@@ -98,5 +99,23 @@ async function login(creds) {
     return user
   } catch (error) {
     console.error('Error during login:', error)
+  }
+}
+
+async function updateCode(updatedCode) {
+  try {
+    const response = await fetch(BASE_URL + 'code/update/', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(updatedCode),
+    })
+
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.log(error)
   }
 }

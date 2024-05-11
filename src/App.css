@@ -88,3 +88,22 @@ button.active {
     transform: rotate(360deg);
   }
 }
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-block-end: 0.5rem;
+}
+
+li .edit-code {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
