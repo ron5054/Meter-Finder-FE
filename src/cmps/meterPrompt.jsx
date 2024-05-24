@@ -1,9 +1,18 @@
 function MeterPrompt({ meter, closePrompt, navigate }) {
-  const { latitude, longitude, text } = meter
+  const { location, text, num } = meter
+
   return (
     <div className='meter-prompt'>
-      <div>{text || 'נמצא מונה'} </div>
-      <button onClick={() => navigate(latitude, longitude)}>נווט למונה</button>
+      <div>
+        מונה {num} - {text || 'נמצא מונה'}
+      </div>
+      <button
+        onClick={() =>
+          navigate(location.coordinates[0], location.coordinates[1])
+        }
+      >
+        נווט למונה
+      </button>
       <button onClick={closePrompt}>סגור</button>
     </div>
   )

@@ -6,6 +6,7 @@ function LoginPage() {
   const navigate = useNavigate()
   const [credentials, setCredentials] = useState({})
   const [loggedInUser, setLoggedInUser] = useContext(loggedInUserContext)
+  const [showLoginForm, setShowLoginForm] = useState(false)
 
   useEffect(() => {
     const fetchUserAndNavigate = async () => {
@@ -14,7 +15,7 @@ function LoginPage() {
         if (user) {
           setLoggedInUser(user)
           navigate('/home')
-        }
+        } else setShowLoginForm(true)
       } catch (error) {
         console.log(error)
       }
@@ -43,21 +44,25 @@ function LoginPage() {
   }
 
   return (
-    <form className='login-form' onSubmit={login}>
-      <input
-        type='text'
-        name='username'
-        placeholder='שם משתמש'
-        onChange={handleLoginForm}
-      />
-      <input
-        type='password'
-        name='password'
-        placeholder='סיסמא'
-        onChange={handleLoginForm}
-      />
-      <button type='submit'>התחבר</button>
-    </form>
+    <>
+      {showLoginForm && (
+        <form className='login-form' onSubmit={login}>
+          <input
+            type='text'
+            name='username'
+            placeholder='שם משתמש'
+            onChange={handleLoginForm}
+          />
+          <input
+            type='password'
+            name='password'
+            placeholder='סיסמא'
+            onChange={handleLoginForm}
+          />
+          <button type='submit'>התחבר</button>
+        </form>
+      )}
+    </>
   )
 }
 

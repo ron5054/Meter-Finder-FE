@@ -9,7 +9,7 @@ main {
 form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.7rem;
 }
 
 input {
@@ -19,7 +19,7 @@ input {
 
 textarea {
   font-size: 1.5rem;
-  height: 10rem;
+  height: 5rem;
 }
 
 h1,
@@ -105,5 +105,11 @@ li {
 li .edit-code {
   display: flex;
   flex-direction: column;
+  gap: 0.5rem;
+}
+
+.search-meters-btn {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
 }

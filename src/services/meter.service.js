@@ -6,6 +6,7 @@ export const meterService = {
   getCodes,
   login,
   getUser,
+  getMetersBylocation,
 }
 
 const BASE_URL =
@@ -131,6 +132,24 @@ async function updateCode(updatedCode) {
 
     const result = await response.json()
     return result
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function getMetersBylocation(latitude, longitude, radius) {
+  try {
+    const response = await fetch(
+      `${BASE_URL}meter/around?latitude=${latitude}&longitude=${longitude}&radius=${radius}`,
+      {
+        credentials: 'include',
+      }
+    )
+
+    if (response.status === 404) return null
+
+    const meters = await response.json()
+    return meters
   } catch (error) {
     console.log(error)
   }

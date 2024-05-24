@@ -6,6 +6,7 @@ import { loggedInUserContext } from '../services/context'
 import MeterPrompt from '../cmps/MeterPrompt.jsx'
 import CodeForm from '../cmps/CodeForm.jsx'
 import CodeList from '../cmps/CodeList.jsx'
+import MeterList from '../cmps/MeterList.jsx'
 
 function Main() {
   const navigate = useNavigate()
@@ -22,7 +23,9 @@ function Main() {
   const [watchId, setWatchId] = useState(null)
   const [message, setMessage] = useState('')
   const [codes, setCodes] = useState([])
+  const [metersAround, setMetersAround] = useState([])
   const [mode, setMode] = useState('addMeter')
+  const [radius, setRadius] = useState(1000)
   const dialog = useRef('dialog')
   const loader = useRef('loader')
 
@@ -77,7 +80,7 @@ function Main() {
     setShowPrompt(false)
   }
 
-  const gpsData = () => latitude && longitude && accuracy <= 50
+  const gpsData = accuracy <= 50 && latitude && longitude
 
   const addCode = async (code) => {
     if (code.num.length <= 2) return showMessage('הקוד אינו תקין', 'error')
@@ -88,7 +91,7 @@ function Main() {
 
     try {
       const success = await meterService.addCode(newCode)
-      loader.current.close()
+      loaderOff()
       if (success) showMessage('הקוד נשמר בהצלחה', 'success')
       else showMessage('הכתובת כבר קיימת במערכת', 'error')
     } catch (error) {
@@ -102,7 +105,7 @@ function Main() {
     setMode('searchCodes')
     try {
       const codes = await meterService.getCodes(latitude, longitude)
-      loader.current.close()
+      loaderOff()
       if (codes.length) setCodes(codes)
       else showMessage('לא נמצאו קודים במיקומך', 'error')
     } catch (error) {
@@ -118,11 +121,10 @@ function Main() {
       const success = await meterService.addMeter({
         num,
         text,
-        latitude,
-        longitude,
+        location: { type: 'Point', coordinates: [latitude, longitude] },
       })
 
-      loader.current.close()
+      loaderOff()
       if (success) {
         showMessage('המונה נשמר בהצלחה', 'success')
         setText('')
@@ -134,12 +136,11 @@ function Main() {
   }
 
   const searchMeter = async () => {
-    console.log(num)
     if (num <= 4) return showMessage('מספר מונה אינו תקין', 'error')
     loaderOn()
     try {
       const meter = await meterService.getMeter(num)
-      loader.current.close()
+      loaderOff()
       if (meter) {
         setMeter(meter)
         setShowPrompt(true)
@@ -151,6 +152,7 @@ function Main() {
   }
 
   const setMeterForm = (boolean) => {
+    setShowPrompt(false)
     setMode('meterForm')
     setIsSearch(boolean)
   }
@@ -158,6 +160,25 @@ function Main() {
   const gotoMap = (latitude, longitude) => {
     const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`
     window.open(url, '_blank')
+  }
+
+  const searchMetersAround = async () => {
+    setMode('searchMetersAround')
+    setShowPrompt(false)
+    try {
+      loaderOn()
+      const meters = await meterService.getMetersBylocation(
+        latitude,
+        longitude,
+        radius
+      )
+      loaderOff()
+
+      if (meters) setMetersAround(meters)
+      else showMessage('לא נמצאו מונים סביבך', 'error')
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const updateCodesState = (codeId, updatedNum) => {
@@ -176,6 +197,12 @@ function Main() {
     loader.current.close()
   }
 
+  const openPrompt = (meter) => {
+    setIsSearch(true)
+    setMeter(meter)
+    setShowPrompt(true)
+  }
+
   return (
     <main>
       <div>{loggedInUser?.name}</div>
@@ -185,6 +212,18 @@ function Main() {
       </div>
       <div>דיוק מיקום: {accuracy} מטר</div>
       <nav>
+        <button className='search-meters-btn' onClick={searchMetersAround}>
+          חפש מונים בסביבתי
+          <input
+            type='range'
+            min={100}
+            max={1000}
+            step={100}
+            value={radius}
+            onInput={(e) => setRadius(e.target.value)}
+          />
+          <span>{radius} מטר</span>
+        </button>
         <div className='nav-row'>
           <button
             className={mode === 'meterForm' && isSearch ? 'active' : ''}
@@ -237,7 +276,7 @@ function Main() {
         </form>
       )}
 
-      {showPrompt && isSearch && mode === 'meterForm' && (
+      {showPrompt && isSearch && (
         <MeterPrompt
           meter={meter}
           closePrompt={closePrompt}
@@ -254,6 +293,10 @@ function Main() {
           loaderOff={loaderOff}
           loaderOn={loaderOn}
         />
+      )}
+
+      {mode === 'searchMetersAround' && metersAround.length > 0 && (
+        <MeterList meters={metersAround} openPrompt={openPrompt} />
       )}
 
       <dialog ref={dialog}>{message}</dialog>
