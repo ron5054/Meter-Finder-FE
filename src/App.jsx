@@ -6,7 +6,7 @@ import { loggedInUserContext } from './services/context.js'
 import Main from './views/Main.jsx'
 import LoginPage from './views/LoginPage.jsx'
 const App = () => {
-  const [loggedInUser, setLoggedInUser] = useState({})
+  const [loggedInUser, setLoggedInUser] = useState(null)
 
   return (
     <loggedInUserContext.Provider value={[loggedInUser, setLoggedInUser]}>

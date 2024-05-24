@@ -9,7 +9,6 @@ import CodeList from '../cmps/CodeList.jsx'
 
 function Main() {
   const navigate = useNavigate()
-  const { user } = JSON.parse(localStorage.getItem('loggedInUser'))
 
   const [loggedInUser, setLoggedInUser] = useContext(loggedInUserContext)
   const [num, setNum] = useState(0)
@@ -28,8 +27,7 @@ function Main() {
   const loader = useRef('loader')
 
   useEffect(() => {
-    if (!user) return navigate('/')
-    else setLoggedInUser(user)
+    if (!loggedInUser) return navigate('/')
     followUserLocation()
   }, [isSearch])
 
@@ -180,6 +178,7 @@ function Main() {
 
   return (
     <main>
+      <div>{loggedInUser?.name}</div>
       <div className='curr-locattion'>
         <h1>מיקום נוכחי</h1>
         {latitude}, {longitude}

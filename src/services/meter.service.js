@@ -5,6 +5,7 @@ export const meterService = {
   updateCode,
   getCodes,
   login,
+  getUser,
 }
 
 const BASE_URL =
@@ -99,6 +100,21 @@ async function login(creds) {
     return user
   } catch (error) {
     console.error('Error during login:', error)
+  }
+}
+
+async function getUser() {
+  try {
+    const response = await fetch(BASE_URL + 'user', {
+      credentials: 'include',
+    })
+
+    if (response.status === 401) return null
+
+    const user = await response.json()
+    return user
+  } catch (error) {
+    console.log(error)
   }
 }
 

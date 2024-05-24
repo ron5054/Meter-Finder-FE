@@ -1,32 +1,34 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { meterService } from '../services/meter.service'
-
+import { loggedInUserContext } from '../services/context'
 function LoginPage() {
   const navigate = useNavigate()
   const [credentials, setCredentials] = useState({})
+  const [loggedInUser, setLoggedInUser] = useContext(loggedInUserContext)
 
   useEffect(() => {
-    const loggedInUser = localStorage.getItem('loggedInUser')
-    const oneYear = 1000 * 60 * 60 * 24 * 365
-    if (loggedInUser) {
-      const { user, loginTime } = JSON.parse(loggedInUser)
-
-      const expired = Date.now() - loginTime >= oneYear
-      if (expired) localStorage.removeItem('loggedInUser')
-      else navigate('/home')
+    const fetchUserAndNavigate = async () => {
+      try {
+        const user = await meterService.getUser()
+        if (user) {
+          setLoggedInUser(user)
+          navigate('/home')
+        }
+      } catch (error) {
+        console.log(error)
+      }
     }
+
+    fetchUserAndNavigate()
   }, [])
 
   const login = async (ev) => {
     ev.preventDefault()
     try {
       const user = await meterService.login(credentials)
-      if (user) {
-        const userData = { user, loginTime: Date.now() }
-        localStorage.setItem('loggedInUser', JSON.stringify(userData))
-        navigate('/home')
-      } else alert('שם משתמש או סיסמא אינם תקינים', 'error')
+      if (user) navigate('/home')
+      else alert('שם משתמש או סיסמא אינם תקינים', 'error')
     } catch (error) {
       console.log(error)
     }
