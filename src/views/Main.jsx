@@ -96,6 +96,7 @@ function Main() {
     setMode('searchCodes')
     try {
       const codes = await meterService.getCodes(latitude, longitude)
+      console.log(codes)
       setShowLoader(false)
       if (codes.length) setCodes(codes)
       else showMessage('לא נמצאו קודים במיקומך', 'error')
@@ -281,8 +282,8 @@ function Main() {
         <CodeList
           codes={codes}
           updateCodesState={updateCodesState}
-          loaderOff={setShowLoader(false)}
-          loaderOn={setShowLoader(true)}
+          loaderOff={() => setShowLoader(false)}
+          loaderOn={() => setShowLoader(true)}
         />
       )}
 
