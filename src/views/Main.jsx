@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useContext } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { meterService } from '../services/meter.service'
 import { loggedInUserContext } from '../services/context'
@@ -7,6 +7,8 @@ import MeterPrompt from '../cmps/MeterPrompt.jsx'
 import CodeForm from '../cmps/CodeForm.jsx'
 import CodeList from '../cmps/CodeList.jsx'
 import MeterList from '../cmps/MeterList.jsx'
+import Loader from '../cmps/Loader.jsx'
+import MessageDialog from '../cmps/MessageDialog.jsx'
 
 function Main() {
   const navigate = useNavigate()
@@ -26,8 +28,7 @@ function Main() {
   const [metersAround, setMetersAround] = useState([])
   const [mode, setMode] = useState('addMeter')
   const [radius, setRadius] = useState(1000)
-  const dialog = useRef('dialog')
-  const loader = useRef('loader')
+  const [showLoader, setShowLoader] = useState(false)
 
   useEffect(() => {
     if (!loggedInUser) return navigate('/')
@@ -62,18 +63,8 @@ function Main() {
     isSearch ? searchMeter() : saveMeter()
   }
 
-  const showMessage = (message, type) => {
-    setMessage(message)
-    dialog.current.className = type
-    dialog.current.showModal()
-    setTimeout(() => {
-      closeMessage()
-    }, 2500)
-  }
-
-  const closeMessage = () => {
-    dialog.current.close()
-    setMessage('')
+  const showMessage = (text, type) => {
+    setMessage({ type, text })
   }
 
   const closePrompt = () => {
@@ -85,13 +76,13 @@ function Main() {
   const addCode = async (code) => {
     if (code.num.length <= 2) return showMessage('הקוד אינו תקין', 'error')
     if (!gpsData) return showMessage('אין קליטת gps', 'error')
-    loaderOn()
+    setShowLoader(true)
     const location = { type: 'Point', coordinates: [latitude, longitude] }
     const newCode = { ...code, location }
 
     try {
       const success = await meterService.addCode(newCode)
-      loaderOff()
+      setShowLoader(false)
       if (success) showMessage('הקוד נשמר בהצלחה', 'success')
       else showMessage('הכתובת כבר קיימת במערכת', 'error')
     } catch (error) {
@@ -100,12 +91,12 @@ function Main() {
   }
 
   const searchCodes = async () => {
-    loaderOn()
+    setShowLoader(true)
     setIsSearch(false)
     setMode('searchCodes')
     try {
       const codes = await meterService.getCodes(latitude, longitude)
-      loaderOff()
+      setShowLoader(false)
       if (codes.length) setCodes(codes)
       else showMessage('לא נמצאו קודים במיקומך', 'error')
     } catch (error) {
@@ -116,7 +107,7 @@ function Main() {
   const saveMeter = async () => {
     if (!gpsData) return showMessage('אין קליטת gps', 'error')
     if (num <= 4) return showMessage('מספר מונה אינו תקין', 'error')
-    loaderOn()
+    setShowLoader(true)
     try {
       const success = await meterService.addMeter({
         num,
@@ -124,7 +115,7 @@ function Main() {
         location: { type: 'Point', coordinates: [latitude, longitude] },
       })
 
-      loaderOff()
+      setShowLoader(false)
       if (success) {
         showMessage('המונה נשמר בהצלחה', 'success')
         setText('')
@@ -137,10 +128,10 @@ function Main() {
 
   const searchMeter = async () => {
     if (num <= 4) return showMessage('מספר מונה אינו תקין', 'error')
-    loaderOn()
+    setShowLoader(true)
     try {
       const meter = await meterService.getMeter(num)
-      loaderOff()
+      setShowLoader(false)
       if (meter) {
         setMeter(meter)
         setShowPrompt(true)
@@ -166,13 +157,13 @@ function Main() {
     setMode('searchMetersAround')
     setShowPrompt(false)
     try {
-      loaderOn()
+      setShowLoader(true)
       const meters = await meterService.getMetersBylocation(
         latitude,
         longitude,
         radius
       )
-      loaderOff()
+      setShowLoader(false)
 
       if (meters) setMetersAround(meters)
       else showMessage('לא נמצאו מונים סביבך', 'error')
@@ -189,23 +180,23 @@ function Main() {
     setCodes(newCodes)
   }
 
-  const loaderOn = () => {
-    loader.current.showModal()
-  }
-
-  const loaderOff = () => {
-    loader.current.close()
-  }
-
   const openPrompt = (meter) => {
     setIsSearch(true)
     setMeter(meter)
     setShowPrompt(true)
   }
 
+  const goToShifts = () => {
+    navigate('/shifts')
+  }
+
   return (
     <main>
-      <div>{loggedInUser?.name}</div>
+      <header>
+        <div>{loggedInUser?.name}</div>
+        <button onClick={goToShifts}>מעקב משמרות</button>
+      </header>
+
       <div className='curr-locattion'>
         <h1>מיקום נוכחי</h1>
         {latitude}, {longitude}
@@ -290,8 +281,8 @@ function Main() {
         <CodeList
           codes={codes}
           updateCodesState={updateCodesState}
-          loaderOff={loaderOff}
-          loaderOn={loaderOn}
+          loaderOff={setShowLoader(false)}
+          loaderOn={setShowLoader(true)}
         />
       )}
 
@@ -299,8 +290,8 @@ function Main() {
         <MeterList meters={metersAround} openPrompt={openPrompt} />
       )}
 
-      <dialog ref={dialog}>{message}</dialog>
-      <dialog ref={loader} className='loader'></dialog>
+      {showLoader && <Loader />}
+      <MessageDialog message={message} />
     </main>
   )
 }
