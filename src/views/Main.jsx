@@ -96,7 +96,6 @@ function Main() {
     setMode('searchCodes')
     try {
       const codes = await meterService.getCodes(latitude, longitude)
-      console.log(codes)
       setShowLoader(false)
       if (codes.length) setCodes(codes)
       else showMessage('לא נמצאו קודים במיקומך', 'error')

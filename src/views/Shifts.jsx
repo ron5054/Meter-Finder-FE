@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loggedInUserContext } from '../services/context'
 import { shiftService } from '../services/shift.service'
@@ -8,6 +8,7 @@ import Loader from '../cmps/Loader.jsx'
 import MessageDialog from '../cmps/MessageDialog.jsx'
 
 export default function Shifts() {
+  const confirmModal = useRef('loader')
   const navigate = useNavigate()
   const [mode, setMode] = useState('')
   const [months, setMonths] = useState([])
@@ -15,6 +16,7 @@ export default function Shifts() {
   const [showLoader, setShowLoader] = useState(false)
   const [loggedInUser, setLoggedInUser] = useContext(loggedInUserContext)
   const [message, setMessage] = useState('')
+  const [shiftDate, setshiftDate] = useState('')
 
   useEffect(() => {
     if (!loggedInUser) return navigate('/home')
@@ -62,34 +64,37 @@ export default function Shifts() {
     }
   }
 
-  const removeShift = async (shiftDate) => {
-    const formattedDate = shiftDate.split('-').reverse().join('/')
-    if (confirm(`האם אתה בטוח שברצונך למחוק את המשמרת ${formattedDate}?`)) {
-      try {
-        setShowLoader(true)
-        const { success } = await shiftService.removeShift(shiftDate)
-        setShowLoader(false)
+  const removeShift = async () => {
+    try {
+      setShowLoader(true)
+      const { success } = await shiftService.removeShift(shiftDate)
+      setShowLoader(false)
 
-        if (success) {
-          const updatedMonth = {
-            ...selectedMonth,
-            shifts: selectedMonth.shifts.filter(
-              (shift) => shift.date !== shiftDate
-            ),
-          }
-
-          setSelectedMonth(updatedMonth)
-
-          setMonths((prevMonths) =>
-            prevMonths.map((month) =>
-              month._id === updatedMonth._id ? updatedMonth : month
-            )
-          )
+      if (success) {
+        const updatedMonth = {
+          ...selectedMonth,
+          shifts: selectedMonth.shifts.filter(
+            (shift) => shift.date !== shiftDate
+          ),
         }
-      } catch (error) {
-        console.log(error)
+
+        setSelectedMonth(updatedMonth)
+
+        setMonths((prevMonths) =>
+          prevMonths.map((month) =>
+            month._id === updatedMonth._id ? updatedMonth : month
+          )
+        )
+        confirmModal.current.close()
       }
+    } catch (error) {
+      console.log(error)
     }
+  }
+
+  const openConfirmModal = (shiftDate) => {
+    setshiftDate(shiftDate)
+    confirmModal.current.showModal()
   }
 
   return (
@@ -106,24 +111,41 @@ export default function Shifts() {
 
       {mode === 'showMonths' && (
         <ul className='month-list'>
-          {months.map((month) => (
-            <button
-              key={month._id}
-              onClick={() => setSelectedMonth(month)}
-              className={month._id === selectedMonth._id ? 'active' : ''}
-            >
-              {month.month}/{month.year}
-            </button>
-          ))}
+          {months.map(
+            (month) =>
+              month.shifts.length > 0 && (
+                <button
+                  key={month._id}
+                  onClick={() => setSelectedMonth(month)}
+                  className={month._id === selectedMonth._id ? 'active' : ''}
+                >
+                  {month.month}/{month.year}
+                </button>
+              )
+          )}
         </ul>
       )}
 
       {selectedMonth && mode === 'showMonths' && (
-        <ShiftsTable selectedMonth={selectedMonth} removeShift={removeShift} />
+        <ShiftsTable
+          selectedMonth={selectedMonth}
+          removeShift={openConfirmModal}
+        />
       )}
 
       {showLoader && <Loader />}
       <MessageDialog message={message} />
+
+      <dialog ref={confirmModal}>
+        <p>
+          האם אתה בטוח שברצונך למחוק את המשמרת?{' '}
+          {shiftDate.split('-').reverse().join('/')}
+        </p>
+        <div className='confirm-btns'>
+          <button onClick={() => confirmModal.current.close()}>בטל</button>
+          <button onClick={removeShift}>מחק</button>
+        </div>
+      </dialog>
     </>
   )
 }
