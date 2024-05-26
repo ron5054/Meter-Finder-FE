@@ -17,9 +17,9 @@ function LoginPage() {
         const user = await meterService.getUser()
         if (user) {
           setLoggedInUser(user)
-          setShowLoader(false)
           navigate('/home')
         } else setShowLoginForm(true)
+        setShowLoader(false)
       } catch (error) {
         console.log(error)
       }
