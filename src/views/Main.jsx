@@ -71,7 +71,12 @@ function Main() {
     setShowPrompt(false)
   }
 
-  const gpsData = accuracy <= 50 && latitude && longitude
+  const gpsData =
+    (process.env.NODE_ENV === 'development'
+      ? accuracy <= 1000
+      : accuracy <= 50) &&
+    latitude &&
+    longitude
 
   const addCode = async (code) => {
     if (code.num.length <= 2) return showMessage('הקוד אינו תקין', 'error')
@@ -91,6 +96,7 @@ function Main() {
   }
 
   const searchCodes = async () => {
+    if (!gpsData) return showMessage('אין קליטת gps', 'error')
     setShowLoader(true)
     setIsSearch(false)
     setMode('searchCodes')
@@ -154,6 +160,7 @@ function Main() {
   }
 
   const searchMetersAround = async () => {
+    if (!gpsData) return showMessage('אין קליטת gps', 'error')
     setMode('searchMetersAround')
     setShowPrompt(false)
     try {

@@ -7,7 +7,9 @@ function MeterList({ meters, openPrompt }) {
     <ul className='meters-list'>
       {meters.map((meter) => (
         <li key={meter._id}>
-          <button onClick={() => handleMeterClick(meter)}>{meter.num}</button>
+          <button onClick={() => handleMeterClick(meter)}>
+            {meter.num} - {meter.distance.toFixed()} מ'
+          </button>
         </li>
       ))}
     </ul>
