@@ -14,7 +14,7 @@ export default defineConfig({
         description:
           'a small app designed to help electric meter readears to save the location of hard to find electric meters thus helping them find the location next time',
         theme_color: '#ffffff',
-        version: '1.0.7',
+        version: '1.0.8',
         icons: [
           {
             src: '/icons/256.png',

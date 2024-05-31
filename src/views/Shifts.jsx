@@ -26,21 +26,28 @@ export default function Shifts() {
     try {
       setShowLoader(true)
       const { success } = await shiftService.addShift(shift)
-      setShowLoader(false)
       if (success) {
         setMessage({
           type: 'success',
-          text: 'המשמרת נוספה בהצלחה',
+          text: 'המשמרת נוסף בהצלחה',
         })
 
-        if (selectedMonth)
-          setSelectedMonth((prevMonth) => ({
-            ...prevMonth,
-            shifts: [...prevMonth?.shifts, shift],
-          }))
+        const updatedShifts = [...(selectedMonth?.shifts || []), shift].sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        )
+
+        setSelectedMonth(
+          (prevMonth) =>
+            prevMonth && {
+              ...prevMonth,
+              shifts: updatedShifts,
+            }
+        )
       }
+      setShowLoader(false)
     } catch (error) {
       console.log(error)
+      setShowLoader(false)
     }
   }
 
@@ -50,14 +57,7 @@ export default function Shifts() {
       const months = await shiftService.getShifts()
       setShowLoader(false)
 
-      setMonths(
-        months.map((month) => ({
-          ...month,
-          shifts: month.shifts.sort(
-            (a, b) => new Date(a.date) - new Date(b.date)
-          ),
-        }))
-      )
+      setMonths(months)
       setMode('showMonths')
     } catch (error) {
       console.log(error)
@@ -78,7 +78,8 @@ export default function Shifts() {
           ),
         }
 
-        setSelectedMonth(updatedMonth)
+        if (updatedMonth.shifts.length) setSelectedMonth(updatedMonth)
+        else setSelectedMonth(null)
 
         setMonths((prevMonths) =>
           prevMonths.map((month) =>
