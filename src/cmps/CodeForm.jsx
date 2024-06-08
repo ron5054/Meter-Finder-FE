@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import SpeechToText from '../cmps/SpeechToText.jsx'
 
 function CodeForm({ addCode }) {
   const [code, setCode] = useState({ address: '', num: '' })
@@ -18,6 +19,7 @@ function CodeForm({ addCode }) {
         placeholder='כתובת מלאה'
         required
       />
+      <SpeechToText emitText={(text) => setCode({ ...code, address: text })} />
       <input
         type='text'
         value={code.num}
@@ -26,7 +28,7 @@ function CodeForm({ addCode }) {
         min={0}
         required
       />
-      <button>הוסף קוד כניסה</button>
+      <button type='submit'>הוסף קוד כניסה</button>
     </form>
   )
 }

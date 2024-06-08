@@ -40,7 +40,6 @@ export default function AddShiftForm({ addShift, closeForm }) {
         onChange={(ev) =>
           setShift({ ...shift, unread: parseInt(ev.target.value) })
         }
-        required
       />
       <button type='submit'>הוסף משמרת</button>
       <button onClick={closeForm}>סגור</button>

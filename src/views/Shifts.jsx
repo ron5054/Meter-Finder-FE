@@ -29,7 +29,7 @@ export default function Shifts() {
       if (success) {
         setMessage({
           type: 'success',
-          text: 'המשמרת נוסף בהצלחה',
+          text: 'המשמרת נוספה בהצלחה',
         })
 
         const updatedShifts = [...(selectedMonth?.shifts || []), shift].sort(

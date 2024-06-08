@@ -9,12 +9,13 @@ import CodeList from '../cmps/CodeList.jsx'
 import MeterList from '../cmps/MeterList.jsx'
 import Loader from '../cmps/Loader.jsx'
 import MessageDialog from '../cmps/MessageDialog.jsx'
+import SpeechToText from '../cmps/SpeechToText.jsx'
 
 function Main() {
   const navigate = useNavigate()
 
   const [loggedInUser, setLoggedInUser] = useContext(loggedInUserContext)
-  const [num, setNum] = useState(0)
+  const [num, setNum] = useState('')
   const [isSearch, setIsSearch] = useState(false)
   const [showPrompt, setShowPrompt] = useState(false)
   const [text, setText] = useState('')
@@ -197,6 +198,12 @@ function Main() {
     navigate('/shifts')
   }
 
+  const handleText = (text) => {
+    const num = parseInt(text)
+    if (!isNaN(num)) setNum(num)
+    else showMessage('לא נקלט מספר', 'error')
+  }
+
   return (
     <main>
       <header>
@@ -254,21 +261,20 @@ function Main() {
 
       {mode === 'meterForm' && (
         <form onSubmit={handleSubmit}>
-          <h1>מספר מונה מלא</h1>
           <input
+            value={num}
             type='number'
             min={0}
             onChange={(ev) => setNum(ev.target.value.trim().replace(/^0+/, ''))}
+            placeholder='מספר מונה'
           />
+          <SpeechToText emitText={handleText} />
           {!isSearch && (
-            <>
-              <h1>תאור מיקום</h1>
-              <textarea
-                rows={5}
-                onChange={(ev) => setText(ev.target.value)}
-                placeholder='הכנס תאור (לא חובה)'
-              />
-            </>
+            <textarea
+              rows={5}
+              onChange={(ev) => setText(ev.target.value)}
+              placeholder='הכנס תאור מיקום (לא חובה)'
+            />
           )}
           <button type='submit'>{!isSearch ? 'שמור מיקום' : 'חפש מונה'}</button>
         </form>

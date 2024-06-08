@@ -8,6 +8,7 @@ form {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+  position: relative;
 }
 
 input {
@@ -155,4 +156,16 @@ td {
 
 table {
   width: 100%;
+}
+
+.mic-btn {
+  height: 50px;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+}
+
+.loader.small {
+  height: 1rem;
+  width: 1rem;
 }
