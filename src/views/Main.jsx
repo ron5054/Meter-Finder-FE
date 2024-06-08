@@ -34,6 +34,7 @@ function Main() {
   useEffect(() => {
     if (!loggedInUser) return navigate('/')
     followUserLocation()
+    meterService.saveCodesFromStorage()
   }, [isSearch])
 
   const followUserLocation = () => {
@@ -93,7 +94,7 @@ function Main() {
       else
         success === null
           ? showMessage('הכתובת כבר קיימת במערכת', 'error')
-          : showMessage('מצטערים, נסה לשפר קליטה', 'error')
+          : showMessage('תקלת תקשורת, הקוד יישלח לשמירה בהמשך', 'error')
     } catch (error) {
       console.log(error)
     }

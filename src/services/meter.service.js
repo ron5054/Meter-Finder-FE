@@ -7,6 +7,7 @@ export const meterService = {
   login,
   getUser,
   getMetersBylocation,
+  saveCodesFromStorage,
 }
 
 const BASE_URL =
@@ -45,7 +46,33 @@ async function getMeter(number) {
   }
 }
 
+function _cacheCode(code) {
+  const codes = JSON.parse(localStorage.getItem('codes') || '[]')
+  localStorage.setItem('codes', JSON.stringify([...codes, code]))
+}
+
+function _removeCodeFromCache(code) {
+  const codes = JSON.parse(localStorage.getItem('codes') || '[]')
+  localStorage.setItem(
+    'codes',
+    JSON.stringify(codes.filter((c) => c.address !== code.address))
+  )
+}
+
+async function saveCodesFromStorage() {
+  const codes = JSON.parse(localStorage.getItem('codes') || '[]')
+  if (!codes.length) return
+  const addCodePromises = codes.map((code) => addCode(code))
+  try {
+    const successes = await Promise.all(addCodePromises)
+    if (successes.length === codes.length) localStorage.removeItem('codes')
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 async function addCode(code) {
+  _cacheCode(code)
   try {
     const response = await fetch(BASE_URL + 'code/add', {
       method: 'POST',
@@ -59,6 +86,7 @@ async function addCode(code) {
     if (response.status === 409) return null
 
     const { success } = await response.json()
+    if (success) _removeCodeFromCache(code)
     return success
   } catch (error) {
     console.log(error)
