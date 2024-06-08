@@ -16,6 +16,7 @@ function SpeechToText({ emitText }) {
     if (isListening) {
       recognition.stop()
       setIsListening(false)
+      setShowLoader(true)
     } else {
       recognition.start()
       setIsListening(true)

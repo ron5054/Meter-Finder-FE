@@ -74,7 +74,7 @@ function Main() {
 
   const gpsData =
     (process.env.NODE_ENV === 'development'
-      ? accuracy <= 1000
+      ? accuracy <= 100000
       : accuracy <= 50) &&
     latitude &&
     longitude
@@ -90,7 +90,10 @@ function Main() {
       const success = await meterService.addCode(newCode)
       setShowLoader(false)
       if (success) showMessage('הקוד נשמר בהצלחה', 'success')
-      else showMessage('הכתובת כבר קיימת במערכת', 'error')
+      else
+        success === null
+          ? showMessage('הכתובת כבר קיימת במערכת', 'error')
+          : showMessage('מצטערים, נסה לשפר קליטה', 'error')
     } catch (error) {
       console.log(error)
     }
@@ -174,7 +177,10 @@ function Main() {
       setShowLoader(false)
 
       if (meters) setMetersAround(meters)
-      else showMessage('לא נמצאו מונים סביבך', 'error')
+      else
+        meters === null
+          ? showMessage('לא נמצאו מונים סביבך', 'error')
+          : showMessage('מצטערים, נסה לשפר קליטה', 'error')
     } catch (error) {
       console.log(error)
     }

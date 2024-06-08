@@ -56,6 +56,8 @@ async function addCode(code) {
       body: JSON.stringify(code),
     })
 
+    if (response.status === 409) return null
+
     const { success } = await response.json()
     return success
   } catch (error) {
