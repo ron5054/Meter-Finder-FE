@@ -94,7 +94,7 @@ function Main() {
       else
         success === null
           ? showMessage('הכתובת כבר קיימת במערכת', 'error')
-          : showMessage('תקלת תקשורת, הקוד יישלח לשמירה בהמשך', 'error')
+          : showMessage('תקלת תקשורת, הקוד ישלח לשמירה בהמשך', 'error')
     } catch (error) {
       console.log(error)
     }

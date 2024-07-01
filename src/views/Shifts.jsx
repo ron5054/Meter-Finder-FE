@@ -14,7 +14,7 @@ export default function Shifts() {
   const [months, setMonths] = useState([])
   const [selectedMonth, setSelectedMonth] = useState('')
   const [showLoader, setShowLoader] = useState(false)
-  const [loggedInUser, setLoggedInUser] = useContext(loggedInUserContext)
+  const [loggedInUser] = useContext(loggedInUserContext)
   const [message, setMessage] = useState('')
   const [shiftDate, setshiftDate] = useState('')
 
@@ -32,8 +32,19 @@ export default function Shifts() {
           text: 'המשמרת נוספה בהצלחה',
         })
 
-        const updatedShifts = [...(selectedMonth?.shifts || []), shift].sort(
+        const month = parseInt(shift.date.split('-')[1], 10)
+        const monthToUpdate = months.find((m) => m.month === month)
+
+        const updatedShifts = [...(monthToUpdate?.shifts || []), shift].sort(
           (a, b) => new Date(a.date) - new Date(b.date)
+        )
+
+        setMonths((prevMonths) =>
+          prevMonths.map((month) =>
+            month._id === monthToUpdate._id
+              ? { ...monthToUpdate, shifts: updatedShifts }
+              : month
+          )
         )
 
         setSelectedMonth(
@@ -44,6 +55,7 @@ export default function Shifts() {
             }
         )
       }
+
       setShowLoader(false)
     } catch (error) {
       console.log(error)
@@ -114,11 +126,11 @@ export default function Shifts() {
         <ul className='month-list'>
           {months.map(
             (month) =>
-              month.shifts.length > 0 && (
+              month?.shifts.length > 0 && (
                 <button
                   key={month._id}
                   onClick={() => setSelectedMonth(month)}
-                  className={month._id === selectedMonth._id ? 'active' : ''}
+                  className={month?._id === selectedMonth?._id ? 'active' : ''}
                 >
                   {month.month}/{month.year}
                 </button>
