@@ -30,6 +30,7 @@ function Main() {
   const [mode, setMode] = useState('addMeter')
   const [radius, setRadius] = useState(1000)
   const [showLoader, setShowLoader] = useState(false)
+  const [address, setAddress] = useState('')
 
   useEffect(() => {
     if (!loggedInUser) return navigate('/')
@@ -138,7 +139,7 @@ function Main() {
   }
 
   const searchMeter = async () => {
-    if (num <= 4) return showMessage('מספר מונה אינו תקין', 'error')
+    if (num.length <= 4) return showMessage('הזן לפחות 5 ספרות', 'error')
     setShowLoader(true)
     try {
       const meter = await meterService.getMeter(num)
@@ -146,7 +147,6 @@ function Main() {
       if (meter) {
         setMeter(meter)
         setShowPrompt(true)
-        setNum(0)
       } else showMessage('לא נמצא מונה', 'error')
     } catch (error) {
       console.log(error)
@@ -209,6 +209,19 @@ function Main() {
     const num = parseInt(text)
     if (!isNaN(num)) setNum(num)
     else showMessage('לא נקלט מספר', 'error')
+  }
+
+  const searchCodesByAddress = async () => {
+    if (!address) return showMessage('לא הכנסת כתובת', 'error')
+    setShowLoader(true)
+    try {
+      const codes = await meterService.getCodesByAddress(address)
+      setShowLoader(false)
+      if (codes.length) setCodes(codes)
+      else showMessage('לא נמצאו קודים בכתובת', 'error')
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
@@ -297,13 +310,23 @@ function Main() {
 
       {mode === 'addCode' && <CodeForm addCode={addCode} />}
 
-      {mode === 'searchCodes' && codes.length > 0 && (
-        <CodeList
-          codes={codes}
-          updateCodesState={updateCodesState}
-          loaderOff={() => setShowLoader(false)}
-          loaderOn={() => setShowLoader(true)}
-        />
+      {mode === 'searchCodes' && (
+        <>
+          <input
+            type='text'
+            placeholder='הכנס כתובת'
+            onChange={(ev) => setAddress(ev.target.value)}
+          />
+          <button onClick={searchCodesByAddress}>
+            חפש קוד כניסה לפי כתובת
+          </button>
+          <CodeList
+            codes={codes}
+            updateCodesState={updateCodesState}
+            loaderOff={() => setShowLoader(false)}
+            loaderOn={() => setShowLoader(true)}
+          />
+        </>
       )}
 
       {mode === 'searchMetersAround' && metersAround.length > 0 && (

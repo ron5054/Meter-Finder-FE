@@ -47,13 +47,10 @@ export default function Shifts() {
           )
         )
 
-        setSelectedMonth(
-          (prevMonth) =>
-            prevMonth && {
-              ...prevMonth,
-              shifts: updatedShifts,
-            }
-        )
+        setSelectedMonth({
+          ...monthToUpdate,
+          shifts: updatedShifts,
+        })
       }
 
       setShowLoader(false)

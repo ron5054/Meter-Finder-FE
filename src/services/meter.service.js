@@ -8,6 +8,7 @@ export const meterService = {
   getUser,
   getMetersBylocation,
   saveCodesFromStorage,
+  getCodesByAddress,
 }
 
 const BASE_URL =
@@ -180,6 +181,21 @@ async function getMetersBylocation(latitude, longitude, radius) {
 
     const meters = await response.json()
     return meters
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+async function getCodesByAddress(address) {
+  try {
+    const response = await fetch(BASE_URL + 'code/' + address, {
+      credentials: 'include',
+    })
+
+    if (response.status === 404) return null
+
+    const codes = await response.json()
+    return codes
   } catch (error) {
     console.log(error)
   }
