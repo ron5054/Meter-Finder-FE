@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { meterService } from '../services/meter.service'
+import { userService } from '../services/user.service.js'
 import { loggedInUserContext } from '../services/context'
 import Loader from '../cmps/Loader'
 function LoginPage() {
@@ -14,7 +15,7 @@ function LoginPage() {
     const fetchUserAndNavigate = async () => {
       try {
         setShowLoader(true)
-        const user = await meterService.getUser()
+        const user = await userService.getUser()
         if (user) {
           setLoggedInUser(user)
           navigate('/home')

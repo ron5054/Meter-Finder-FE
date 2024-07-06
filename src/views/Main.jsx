@@ -1,6 +1,8 @@
 import { useEffect, useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { meterService } from '../services/meter.service'
+import { userService } from '../services/user.service.js'
+import { codeService } from '../services/code.service.js'
 import { loggedInUserContext } from '../services/context'
 
 import MeterPrompt from '../cmps/MeterPrompt.jsx'
@@ -35,14 +37,14 @@ function Main() {
   useEffect(() => {
     if (!loggedInUser) return navigate('/')
     followUserLocation()
-    meterService.saveCodesFromStorage()
+    codeService.saveCodesFromStorage()
     updateUserLastSeen()
   }, [isSearch])
 
   const updateUserLastSeen = async () => {
     if (Date.now() - loggedInUser.lastSeen?.timestamp < 300000) return
     try {
-      const updatedUser = await meterService.setLastLogin(loggedInUser)
+      const updatedUser = await userService.setLastLogin(loggedInUser)
       if (updatedUser) setLoggedInUser(updatedUser)
     } catch (error) {
       console.error(error)
@@ -100,7 +102,7 @@ function Main() {
     const newCode = { ...code, location }
 
     try {
-      const success = await meterService.addCode(newCode)
+      const success = await codeService.addCode(newCode)
       setShowLoader(false)
       if (success) showMessage('הקוד נשמר בהצלחה', 'success')
       else
@@ -118,7 +120,7 @@ function Main() {
     setIsSearch(false)
     setMode('searchCodes')
     try {
-      const codes = await meterService.getCodes(latitude, longitude)
+      const codes = await codeService.getCodes(latitude, longitude)
       setShowLoader(false)
       if (codes.length) setCodes(codes)
       else showMessage('לא נמצאו קודים במיקומך', 'error')
@@ -226,7 +228,7 @@ function Main() {
     if (!address) return showMessage('לא הכנסת כתובת', 'error')
     setShowLoader(true)
     try {
-      const codes = await meterService.getCodesByAddress(address)
+      const codes = await codeService.getCodesByAddress(address)
       setShowLoader(false)
       if (codes.length) setCodes(codes)
       else showMessage('לא נמצאו קודים בכתובת', 'error')
@@ -346,6 +348,7 @@ function Main() {
 
       {showLoader && <Loader />}
       <MessageDialog message={message} />
+      <div className='version'>ver {import.meta.env.VITE_APP_VERSION}</div>
     </main>
   )
 }
