@@ -9,6 +9,7 @@ export const meterService = {
   getMetersBylocation,
   saveCodesFromStorage,
   getCodesByAddress,
+  setLastLogin,
 }
 
 const BASE_URL =
@@ -198,5 +199,39 @@ async function getCodesByAddress(address) {
     return codes
   } catch (error) {
     console.log(error)
+  }
+}
+
+async function setLastLogin(loggedInUser) {
+  const date = new Date().toLocaleDateString()
+  const time = new Date().toLocaleTimeString()
+
+  const user = {
+    ...loggedInUser,
+    lastSeen: { timestamp: Date.now(), date, time },
+  }
+
+  return await updateUser(user)
+}
+
+async function updateUser(user) {
+  try {
+    const response = await fetch(BASE_URL + 'user', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(user),
+    })
+
+    if (!response.ok) {
+      throw new Error(await response.text())
+    }
+
+    return await response.json()
+  } catch (error) {
+    console.error('Error during updateUser:', error)
+    return null
   }
 }

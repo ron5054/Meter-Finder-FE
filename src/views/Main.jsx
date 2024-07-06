@@ -36,7 +36,18 @@ function Main() {
     if (!loggedInUser) return navigate('/')
     followUserLocation()
     meterService.saveCodesFromStorage()
+    updateUserLastSeen()
   }, [isSearch])
+
+  const updateUserLastSeen = async () => {
+    if (Date.now() - loggedInUser.lastSeen?.timestamp < 300000) return
+    try {
+      const updatedUser = await meterService.setLastLogin(loggedInUser)
+      if (updatedUser) setLoggedInUser(updatedUser)
+    } catch (error) {
+      console.error(error)
+    }
+  }
 
   const followUserLocation = () => {
     if (!isSearch && watchId === null) {
