@@ -1,4 +1,4 @@
-import { meterService } from '../services/meter.service'
+import { codeService } from '../services/code.service'
 import { useState } from 'react'
 
 function CodeList({ codes, updateCodesState, loaderOn, loaderOff }) {
@@ -9,7 +9,7 @@ function CodeList({ codes, updateCodesState, loaderOn, loaderOff }) {
     if (updatedNum.length < 3) return
     try {
       loaderOn()
-      const { success } = await meterService.updateCode({ codeId, updatedNum })
+      const { success } = await codeService.updateCode({ codeId, updatedNum })
       loaderOff()
 
       if (success) {
