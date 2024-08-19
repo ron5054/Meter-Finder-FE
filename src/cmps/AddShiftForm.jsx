@@ -5,6 +5,7 @@ export default function AddShiftForm({ addShift, closeForm }) {
     date: new Date().toISOString().split('T')[0],
     read: 0,
     unread: 0,
+    km: '',
   })
 
   const submitAddShift = (ev) => {
@@ -39,6 +40,14 @@ export default function AddShiftForm({ addShift, closeForm }) {
         placeholder='אי קריאה'
         onChange={(ev) =>
           setShift({ ...shift, unread: parseInt(ev.target.value) })
+        }
+      />
+      <input
+        type='number'
+        min={0}
+        placeholder='ק"מ'
+        onChange={(ev) =>
+          setShift({ ...shift, km: parseInt(ev.target.value) })
         }
       />
       <button type='submit'>הוסף משמרת</button>

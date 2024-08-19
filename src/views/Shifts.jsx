@@ -67,6 +67,7 @@ export default function Shifts() {
       setShowLoader(false)
 
       setMonths(months)
+      setSelectedMonth(months[months.length - 1])
       setMode('showMonths')
     } catch (error) {
       console.log(error)

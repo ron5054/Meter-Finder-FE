@@ -1,6 +1,6 @@
 export default function ShiftsTable({ selectedMonth, removeShift }) {
   const calcTotal = (shifts, field) => {
-    return shifts.reduce((total, shift) => total + shift[field], 0)
+    return shifts.reduce((total, shift) => total + (shift[field] || 0), 0)
   }
 
   const calcReadPercentage = (shifts) => {
@@ -24,6 +24,7 @@ export default function ShiftsTable({ selectedMonth, removeShift }) {
           <th>נקראו</th>
           <th>אי קריאה</th>
           <th>אחוז נקראו</th>
+          <th>ק"מ</th>
         </tr>
       </thead>
       <tbody>
@@ -34,6 +35,7 @@ export default function ShiftsTable({ selectedMonth, removeShift }) {
             <td>{shift.read}</td>
             <td>{shift.unread}</td>
             <td>{calaDailyRead(shift)}%</td>
+            <td>{shift.km}</td>
           </tr>
         ))}
       </tbody>
@@ -44,6 +46,7 @@ export default function ShiftsTable({ selectedMonth, removeShift }) {
           <th>{calcTotal(selectedMonth.shifts, 'read')}</th>
           <th>{calcTotal(selectedMonth.shifts, 'unread')}</th>
           <th>{calcReadPercentage(selectedMonth.shifts)}%</th>
+          <th>{calcTotal(selectedMonth.shifts, 'km')}</th>
         </tr>
       </tfoot>
     </table>
