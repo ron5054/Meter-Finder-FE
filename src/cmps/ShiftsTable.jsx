@@ -1,4 +1,18 @@
-export default function ShiftsTable({ selectedMonth, removeShift }) {
+import { useState } from 'react'
+export default function ShiftsTable({ selectedMonth, removeShift, editShift }) {
+  const [timer, setTimer] = useState(null)
+
+  const handleTouchStart = (shift) => {
+    const newTimer = setTimeout(() => {
+      editShift(shift)
+    }, 800)
+    setTimer(newTimer)
+  }
+
+  const handleTouchEnd = () => {
+    clearTimeout(timer)
+  }
+
   const calcTotal = (shifts, field) => {
     return shifts.reduce((total, shift) => total + (shift[field] || 0), 0)
   }
@@ -29,7 +43,7 @@ export default function ShiftsTable({ selectedMonth, removeShift }) {
       </thead>
       <tbody>
         {selectedMonth.shifts.map((shift, index) => (
-          <tr key={index}>
+          <tr key={index} onTouchStart={() => handleTouchStart(shift)} onTouchEnd={handleTouchEnd}>
             <td onClick={() => removeShift(shift.date)}>❌</td>
             <td>{shift.date.split('-').reverse().join('/')}</td>
             <td>{shift.read}</td>

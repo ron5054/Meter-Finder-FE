@@ -9,6 +9,7 @@ import MessageDialog from '../cmps/MessageDialog.jsx'
 
 export default function Shifts() {
   const confirmModal = useRef('loader')
+  const editModal = useRef('editModal')
   const navigate = useNavigate()
   const [mode, setMode] = useState('')
   const [months, setMonths] = useState([])
@@ -17,6 +18,12 @@ export default function Shifts() {
   const [loggedInUser] = useContext(loggedInUserContext)
   const [message, setMessage] = useState('')
   const [shiftDate, setshiftDate] = useState('')
+  const [selectedShift, setSelectedShift] = useState({
+    date: '',
+    read: '',
+    unread: '',
+    km: '',
+  })
 
   useEffect(() => {
     if (!loggedInUser) return navigate('/home')
@@ -103,9 +110,48 @@ export default function Shifts() {
     }
   }
 
+  const openEditModal = (shift) => {
+    setSelectedShift(shift)
+    editModal.current.showModal()
+  }
+
+  const editShift = async (shift) => {
+    
+      const month = parseInt(shift.date.split('-')[1], 10)
+      const monthToUpdate = months.find((m) => m.month === month)
+      monthToUpdate.shifts = monthToUpdate.shifts.map((s) =>
+        s.date === shift.date ? shift : s
+      )
+
+      setMonths((prevMonths) =>
+        prevMonths.map((month) =>
+          month._id === monthToUpdate._id
+            ? { ...monthToUpdate, shifts: monthToUpdate.shifts }
+            : month
+        )
+      )
+
+      setSelectedMonth({ ...monthToUpdate, shifts: monthToUpdate.shifts })
+
+      try {
+        setShowLoader(true)
+        const { success } = await shiftService.updateMonth(monthToUpdate)
+        setShowLoader(false)
+        if (success) editModal.current.close()
+      } catch (error) {
+        console.log(error)
+      }
+  }
+    
+
   const openConfirmModal = (shiftDate) => {
     setshiftDate(shiftDate)
     confirmModal.current.showModal()
+  }
+
+  const euDate = (date) => {
+    const [year, month, day] = date.split('-')
+    return `${day}/${month}/${year}`
   }
 
   return (
@@ -141,6 +187,7 @@ export default function Shifts() {
         <ShiftsTable
           selectedMonth={selectedMonth}
           removeShift={openConfirmModal}
+          editShift={openEditModal}
         />
       )}
 
@@ -156,6 +203,19 @@ export default function Shifts() {
           <button onClick={() => confirmModal.current.close()}>בטל</button>
           <button onClick={removeShift}>מחק</button>
         </div>
+      </dialog>
+
+      <dialog ref={editModal} className="edit-modal-container">
+        <section className="edit-modal">
+          <div>{euDate(selectedShift?.date)}</div>
+          <input type="text" placeholder="מספר מונים" value={selectedShift?.read|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, read: e.target.value })} />
+          <input type="text" placeholder="אי קריאה" value={selectedShift?.unread|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, unread: e.target.value })} />
+          <input type="text" placeholder="קילומטר" value={selectedShift?.km|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, km: e.target.value })} />
+          <section className="edit-shift-btns">
+            <button onClick={() => editModal.current.close()}>סגור</button>
+            <button onClick={() => editShift(selectedShift)}>שמור</button>
+          </section>
+        </section>
       </dialog>
     </>
   )

@@ -2,6 +2,7 @@ export const shiftService = {
   addShift,
   getShifts,
   removeShift,
+  updateMonth
 }
 
 const BASE_URL =
@@ -53,3 +54,21 @@ async function removeShift(shiftDate) {
     console.log(error)
   }
 }
+
+async function updateMonth(month) {
+  try {
+    const response = await fetch(BASE_URL + 'shift/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(month),
+    })
+
+    const result = await response.json()
+    return result
+  } catch (error) {
+    console.log(error)
+  }
+} 

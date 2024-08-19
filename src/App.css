@@ -146,7 +146,7 @@ th,
 td {
   border: 1px solid white;
   border-collapse: collapse;
-  padding: 0.5rem;
+  padding: 0.4rem;
   margin: auto;
 }
 th,
@@ -175,4 +175,24 @@ table {
   bottom: 0;
   right: 0;
   padding: 0.5rem;
+}
+
+.edit-modal-container {
+  border-radius: 0.5rem;
+}
+
+.edit-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.edit-shift-btns {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.edit-shift-btns button {
+  width: 100%;
 }
