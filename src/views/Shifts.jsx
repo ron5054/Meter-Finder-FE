@@ -208,8 +208,8 @@ export default function Shifts() {
       <dialog ref={editModal} className="edit-modal-container">
         <section className="edit-modal">
           <div>{euDate(selectedShift?.date)}</div>
-          <input type="text" placeholder="מספר מונים" value={selectedShift?.read|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, read: e.target.value })} />
-          <input type="text" placeholder="אי קריאה" value={selectedShift?.unread|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, unread: e.target.value })} />
+          <input type="text" placeholder="מספר מונים" value={selectedShift?.read|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, read: +e.target.value })} />
+          <input type="text" placeholder="אי קריאה" value={selectedShift?.unread|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, unread: +e.target.value })} />
           <input type="text" placeholder="קילומטר" value={selectedShift?.km|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, km: e.target.value })} />
           <section className="edit-shift-btns">
             <button onClick={() => editModal.current.close()}>סגור</button>

@@ -14,7 +14,7 @@ export default function ShiftsTable({ selectedMonth, removeShift, editShift }) {
   }
 
   const calcTotal = (shifts, field) => {
-    return shifts.reduce((total, shift) => total + (shift[field] || 0), 0)
+    return shifts.reduce((total, shift) => total + +(shift[field] || 0), 0)
   }
 
   const calcReadPercentage = (shifts) => {
@@ -24,8 +24,7 @@ export default function ShiftsTable({ selectedMonth, removeShift, editShift }) {
     return ((totalRead / total) * 100).toFixed(2)
   }
 
-  const calaDailyRead = (shift) => {
-    const { read, unread } = shift
+  const calaDailyRead = ({ read, unread }) => {
     return ((read / (read + unread)) * 100).toFixed(2)
   }
 
