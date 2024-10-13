@@ -27,16 +27,22 @@ export default function Shifts() {
 
   useEffect(() => {
     if (!loggedInUser) return navigate('/home')
+      getShifts()
   }, [loggedInUser])
 
   const addShift = async (shift) => {
+    
+    const msg = isYourPaceGood(shift.read)
+      ? 'יפה מאוד אתה מעל הקצב'
+      : 'אתה לא בקצב תתחיל לזוז'
+
     try {
       setShowLoader(true)
       const { success } = await shiftService.addShift(shift)
       if (success) {
         setMessage({
           type: 'success',
-          text: 'המשמרת נוספה בהצלחה',
+          text: months.length >= 1 ? `המשמרת נוספה בהצלחה - ${msg}` : 'המשמרת נוספה בהצלחה',
         })
 
         const month = parseInt(shift.date.split('-')[1], 10)
@@ -74,7 +80,10 @@ export default function Shifts() {
       setShowLoader(false)
 
       setMonths(months)
-      setSelectedMonth(months[months.length - 1])
+      const currMonth = months.find(
+        (month) => month.month === new Date().getMonth() + 1
+      )
+      setSelectedMonth(currMonth)
       setMode('showMonths')
     } catch (error) {
       console.log(error)
@@ -116,33 +125,32 @@ export default function Shifts() {
   }
 
   const editShift = async (shift) => {
-    
-      const month = parseInt(shift.date.split('-')[1], 10)
-      const monthToUpdate = months.find((m) => m.month === month)
-      monthToUpdate.shifts = monthToUpdate.shifts.map((s) =>
-        s.date === shift.date ? shift : s
+
+    const month = parseInt(shift.date.split('-')[1], 10)
+    const monthToUpdate = months.find((m) => m.month === month)
+    monthToUpdate.shifts = monthToUpdate.shifts.map((s) =>
+      s.date === shift.date ? shift : s
+    )
+
+    setMonths((prevMonths) =>
+      prevMonths.map((month) =>
+        month._id === monthToUpdate._id
+          ? { ...monthToUpdate, shifts: monthToUpdate.shifts }
+          : month
       )
+    )
 
-      setMonths((prevMonths) =>
-        prevMonths.map((month) =>
-          month._id === monthToUpdate._id
-            ? { ...monthToUpdate, shifts: monthToUpdate.shifts }
-            : month
-        )
-      )
+    setSelectedMonth({ ...monthToUpdate, shifts: monthToUpdate.shifts })
 
-      setSelectedMonth({ ...monthToUpdate, shifts: monthToUpdate.shifts })
-
-      try {
-        setShowLoader(true)
-        const { success } = await shiftService.updateMonth(monthToUpdate)
-        setShowLoader(false)
-        if (success) editModal.current.close()
-      } catch (error) {
-        console.log(error)
-      }
+    try {
+      setShowLoader(true)
+      const { success } = await shiftService.updateMonth(monthToUpdate)
+      setShowLoader(false)
+      if (success) editModal.current.close()
+    } catch (error) {
+      console.log(error)
+    }
   }
-    
 
   const openConfirmModal = (shiftDate) => {
     setshiftDate(shiftDate)
@@ -154,11 +162,35 @@ export default function Shifts() {
     return `${day}/${month}/${year}`
   }
 
+  const calcCurrAvgMeters = () => {
+    const relevantMonths = months.slice(0, -1)
+    const totalRead = relevantMonths.reduce((acc, month) => {
+      const monthShifts = month?.shifts
+        .filter((shift) => shift.date.split('-')[2] <= new Date().getDate())
+        .reduce((sum, shift) => sum + shift.read, 0)
+      return acc + monthShifts
+    }, 0)
+
+    return totalRead / relevantMonths.length
+  }
+
+  const isYourPaceGood = (todayRead) => {
+    if (months.length <= 1) return
+    const avgMeters = calcCurrAvgMeters()
+    
+    const thisMonth = months.find((month) => month.month === new Date().getMonth() + 1)
+    const totalRead = thisMonth.shifts?.reduce((sum, shift) => {
+      return sum + shift.read
+    }, 0)
+
+    return avgMeters < totalRead + todayRead
+  }
+
   return (
     <>
       <div className='nav-row nav-shifts'>
         <button onClick={() => setMode('addShift')}>הוסף משמרת</button>
-        <button onClick={() => getShifts()}>הצג משמרות</button>
+        <button onClick={() => setMode('showMonths')}>הצג משמרות</button>
         <button onClick={() => navigate('/home')}>חזרה לדף הבית</button>
       </div>
 
@@ -205,13 +237,34 @@ export default function Shifts() {
         </div>
       </dialog>
 
-      <dialog ref={editModal} className="edit-modal-container">
-        <section className="edit-modal">
+      <dialog ref={editModal} className='edit-modal-container'>
+        <section className='edit-modal'>
           <div>{euDate(selectedShift?.date)}</div>
-          <input type="text" placeholder="מספר מונים" value={selectedShift?.read|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, read: +e.target.value })} />
-          <input type="text" placeholder="אי קריאה" value={selectedShift?.unread|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, unread: +e.target.value })} />
-          <input type="text" placeholder="קילומטר" value={selectedShift?.km|| ''} onChange={(e) => setSelectedShift({ ...selectedShift, km: e.target.value })} />
-          <section className="edit-shift-btns">
+          <input
+            type='text'
+            placeholder='מספר מונים'
+            value={selectedShift?.read || ''}
+            onChange={(e) =>
+              setSelectedShift({ ...selectedShift, read: +e.target.value })
+            }
+          />
+          <input
+            type='text'
+            placeholder='אי קריאה'
+            value={selectedShift?.unread || ''}
+            onChange={(e) =>
+              setSelectedShift({ ...selectedShift, unread: +e.target.value })
+            }
+          />
+          <input
+            type='text'
+            placeholder='קילומטר'
+            value={selectedShift?.km || ''}
+            onChange={(e) =>
+              setSelectedShift({ ...selectedShift, km: e.target.value })
+            }
+          />
+          <section className='edit-shift-btns'>
             <button onClick={() => editModal.current.close()}>סגור</button>
             <button onClick={() => editShift(selectedShift)}>שמור</button>
           </section>
