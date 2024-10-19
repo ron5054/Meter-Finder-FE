@@ -115,10 +115,10 @@ function Main() {
   }
 
   const searchCodes = async () => {
+    setMode('searchCodes')
     if (!gpsData) return showMessage('אין קליטת gps', 'error')
     setShowLoader(true)
     setIsSearch(false)
-    setMode('searchCodes')
     try {
       const codes = await codeService.getCodes(latitude, longitude)
       setShowLoader(false)

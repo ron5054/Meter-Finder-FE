@@ -31,6 +31,8 @@ export default function Shifts() {
   }, [loggedInUser])
 
   const addShift = async (shift) => {
+
+    const isShowPaceMsg = new Date().getDate() >= 7 && months.length >= 1
     
     const msg = isYourPaceGood(shift.read)
       ? 'יפה מאוד אתה מעל הקצב'
@@ -42,7 +44,7 @@ export default function Shifts() {
       if (success) {
         setMessage({
           type: 'success',
-          text: months.length >= 1 ? `המשמרת נוספה בהצלחה - ${msg}` : 'המשמרת נוספה בהצלחה',
+          text: isShowPaceMsg ? `המשמרת נוספה בהצלחה - ${msg}` : 'המשמרת נוספה בהצלחה',
         })
 
         const month = parseInt(shift.date.split('-')[1], 10)
