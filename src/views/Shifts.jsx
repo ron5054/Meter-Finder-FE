@@ -56,7 +56,7 @@ export default function Shifts() {
 
         setMonths((prevMonths) =>
           prevMonths.map((month) =>
-            month._id === monthToUpdate._id
+            month?._id === monthToUpdate?._id
               ? { ...monthToUpdate, shifts: updatedShifts }
               : month
           )
@@ -181,7 +181,7 @@ export default function Shifts() {
     const avgMeters = calcCurrAvgMeters()
     
     const thisMonth = months.find((month) => month.month === new Date().getMonth() + 1)
-    const totalRead = thisMonth.shifts?.reduce((sum, shift) => {
+    const totalRead = thisMonth?.shifts?.reduce((sum, shift) => {
       return sum + shift.read
     }, 0)
 
